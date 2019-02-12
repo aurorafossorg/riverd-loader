@@ -369,4 +369,15 @@ else {
 		Dylib dylib;
 		private string[] _libs;
 	}
+
+	pragma(inline, true) void dylib_unload(void* handle)
+	{
+		(cast(DylibLoader)handle).dylib.unload();
+	}
+}
+
+pragma(inline, true) bool dylib_is_loaded(void* handle)
+{
+	version(D_BetterC) return !(handle is null);
+	else return (cast(DylibLoader)handle).dylib.isLoaded();
 }

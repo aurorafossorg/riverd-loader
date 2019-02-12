@@ -68,7 +68,7 @@ template DylibLoaderBuilder(string handle_name, string[] libs, alias T, bool req
 			ret ~= "if(handle is null) return null;\n\n";
 		}
 		else {
-			ret ~= "void* dylib_load_" ~ toLower(handle_name) ~ "() { return new " ~ handle_name ~ "DylibLoader(); }\n class " ~ handle_name ~ "DylibLoader : DylibLoader {\nthis() { super(";
+			ret ~= "pragma(inline, true) void* dylib_load_" ~ toLower(handle_name) ~ "() { return cast(void*)(new " ~ handle_name ~ "DylibLoader()); }\n class " ~ handle_name ~ "DylibLoader : DylibLoader {\nthis() { super(";
 
 			string tmp = "[";
 			foreach(string t; libs)
@@ -84,7 +84,7 @@ template DylibLoaderBuilder(string handle_name, string[] libs, alias T, bool req
 		{
 			static if( isFunctionPointer!(__traits(getMember, T, mem)) /*&& !is(typeof(__traits(getMember, T, mem)) == immutable)*/)
 			{
-				version(D_BetterC) ret ~= "\tdylib_bindSymbol(handle,cast(void**)&" ~ mem ~ ", \"" ~ mem ~ "\", " ~ dthrow ~ ");\n";
+				version(D_BetterC) ret ~= "\tdylib_bindSymbol(handle,cast(void**)&" ~ mem ~ ", \"" ~ mem ~ "\");\n";
 				else ret ~= "\tbindFunc(" ~ mem ~ ", \"" ~ mem ~ "\", " ~ dthrow ~ ");\n";
 			}
 		}
