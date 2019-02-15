@@ -2,6 +2,9 @@
 	"name": "riverd-core",
 	"description": "A cross-platform betterC compatible shared library loader for D bindings",
 	"license": "LGPL-3.0",
+	"authors": [
+		"Luís Ferreira"
+	],
 	"targetType": "staticLibrary",
 	"targetPath": ".out/bin",
 	"importPaths": ["source"],

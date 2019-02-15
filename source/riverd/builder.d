@@ -58,9 +58,10 @@ template DylibLoaderBuilder(string handle_name, string[] libs, alias T, bool req
 
 		string ret = "\n";
 
+		import std.string : toLower;
+
 		version(D_BetterC)
 		{
-			import std.string : toLower;
 			import std.array : join;
 			ret ~= "void* dylib_load_" ~ toLower(handle_name) ~ "() { void* handle;";
 			foreach(string lib; libs)

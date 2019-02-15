@@ -56,25 +56,15 @@ import std.traits;
 version(Posix) import core.sys.posix.dlfcn;
 else version(Windows) import core.sys.windows.windows;
 
-version(D_BetterC)
-{
-	import std.conv : to;
+import std.conv : to;
 
-	@nogc nothrow:
+@nogc nothrow {
 	void* dylib_load(const(char)* name)
 	{
 		version(Posix) void* handle = dlopen(name, RTLD_NOW);
 		else version(Windows) void* handle = LoadLibraryA(name);
 		if(handle) return handle;
 		else return null;
-	}
-
-	void dylib_unload(void* handle) {
-		if(handle) {
-			version(Posix) dlclose(handle);
-			else version(Windows) FreeLibrary(handle);
-			handle = null;
-		}
 	}
 
 	void dylib_bindSymbol(void* handle, void** ptr, const(char)* name)
@@ -116,6 +106,15 @@ version(D_BetterC)
 			char* msg = dlerror();
 			strncpy(buf, msg != null ? msg : "Unknown Error", len);
 			buf[len - 1] = 0;
+		}
+	}
+}
+version(D_BetterC) {
+	@nogc nothrow void dylib_unload(void* handle) {
+		if(handle) {
+			version(Posix) dlclose(handle);
+			else version(Windows) FreeLibrary(handle);
+			handle = null;
 		}
 	}
 }
