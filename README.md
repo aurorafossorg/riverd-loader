@@ -32,10 +32,10 @@ void* libname_handle = dylib_load_libname(); // load
 dylib_unload(libname_handle); // unload
 bool loaded = dylib_is_loaded(libname_handle); // isloaded
 ```
-# How to contribute
+## How to contribute
 Check out our [wiki](https://wiki.aurorafoss.org/).
 
-# License
+## License
 GNU Lesser General Public License (Version 3, 29 June 2007)
 
 ---
