@@ -1,2 +1,7 @@
 v1.0.0
 - First Release
+
+v1.0.1
+- Fix minor issues
+- Add more support for -betterC
+- Able to use @nogc and nothrow functions on non betterC code
