@@ -101,3 +101,22 @@ template DylibLoaderBuilder(string handle_name, string[] libs, alias T, bool req
 
 	enum DylibLoaderBuilder = _buildLoader!(handle_name, libs, T, required)();
 }
+
+template DylibTypeBuilder(alias T)
+{
+	string _buildTypes(alias T)()
+	{
+		string ret;
+		import std.traits;
+		foreach(func; __traits(derivedMembers, T))
+		{
+			alias ftype = __traits(getMember, T, func);
+			static if(isFunction!(ftype))
+				ret ~= "alias da_" ~ func ~ " = "~ ReturnType!(ftype).stringof ~ " function" ~ Parameters!(ftype).stringof ~ ";\n";
+		}
+
+		return ret;
+	}
+
+	enum DylibTypeBuilder = _buildTypes!(T)();
+}
