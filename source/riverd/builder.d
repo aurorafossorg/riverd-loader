@@ -47,6 +47,16 @@ from BindBC. Check it out at github.com/BindBC/bindbc-loader .
 
 module riverd.builder;
 
+import std.traits;
+
+/** Dynamic Library Loader Builder
+ * This template combined with a mixin,
+ * build automatically a dynamic loader for a specific library.
+ * @param handle_name handle name, normally the library name
+ * @param libs possible libraries names array
+ * @param T alias to dynfun specific library module
+ * @param required strictly require, otherwise throw an exception
+ */
 template DylibLoaderBuilder(string handle_name, string[] libs, alias T, bool required = false)
 {
 	string _buildLoader(string handle_name, string[] libs, alias T, bool required = false)()
@@ -62,6 +72,7 @@ template DylibLoaderBuilder(string handle_name, string[] libs, alias T, bool req
 
 		version(D_BetterC)
 		{
+			// implementation of dynamic loader for -betterC
 			import std.array : join;
 			ret ~= "void* dylib_load_" ~ toLower(handle_name) ~ "() { void* handle;";
 			foreach(string lib; libs)
@@ -69,7 +80,10 @@ template DylibLoaderBuilder(string handle_name, string[] libs, alias T, bool req
 			ret ~= "if(handle is null) return null;\n\n";
 		}
 		else {
-			ret ~= "pragma(inline, true) void* dylib_load_" ~ toLower(handle_name) ~ "() { return cast(void*)(new " ~ handle_name ~ "DylibLoader()); }\n class " ~ handle_name ~ "DylibLoader : DylibLoader {\nthis() { super(";
+			// create dylib_load function for garbage collected loader
+			ret ~= "pragma(inline, true) void* dylib_load_" ~ toLower(handle_name)
+				~ "() { return cast(void*)(new " ~ handle_name ~ "DylibLoader()); }\n class "
+				~ handle_name ~ "DylibLoader : DylibLoader {\nthis() { super(";
 
 			string tmp = "[";
 			foreach(string t; libs)
@@ -80,10 +94,9 @@ template DylibLoaderBuilder(string handle_name, string[] libs, alias T, bool req
 			ret ~= tmp ~ "); }\noverride void loadSymbols() {\n";
 		}
 		
-		import std.traits;
 		foreach(mem; __traits(derivedMembers, T))
 		{
-			static if( isFunctionPointer!(__traits(getMember, T, mem)) /*&& !is(typeof(__traits(getMember, T, mem)) == immutable)*/)
+			static if( isFunctionPointer!(__traits(getMember, T, mem)))
 			{
 				version(D_BetterC) ret ~= "\tdylib_bindSymbol(handle,cast(void**)&" ~ mem ~ ", \"" ~ mem ~ "\");\n";
 				else ret ~= "\tbindFunc(" ~ mem ~ ", \"" ~ mem ~ "\", " ~ dthrow ~ ");\n";
@@ -102,12 +115,16 @@ template DylibLoaderBuilder(string handle_name, string[] libs, alias T, bool req
 	enum DylibLoaderBuilder = _buildLoader!(handle_name, libs, T, required)();
 }
 
+/** Dynamic Library Type Builder
+ * This template combined with a mixin,
+ * build automatically the types needed by the dynamic loader.
+ * @param T alias to dynfun specific library module
+ */
 template DylibTypeBuilder(alias T)
 {
 	string _buildTypes(alias T)()
 	{
 		string ret;
-		import std.traits;
 		foreach(func; __traits(derivedMembers, T))
 		{
 			alias ftype = __traits(getMember, T, func);

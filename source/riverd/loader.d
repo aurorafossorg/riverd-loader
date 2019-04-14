@@ -47,18 +47,23 @@ from BindBC. Check it out at github.com/BindBC/bindbc-loader .
 
 module riverd.loader;
 
-///TODO: Need documentation
+/** Dynamic library loader
+ * @file riverd/loader.d
+ * @author Luís Ferreira <luis@aurorafoss.org>
+ */
 
 public import riverd.builder;
-
-import std.traits;
 
 version(Posix) import core.sys.posix.dlfcn;
 else version(Windows) import core.sys.windows.windows;
 
 import std.conv : to;
+import std.traits;
 
 @nogc nothrow {
+	/** Load a dynamic library
+	 * @param name complete library string name
+	 */
 	void* dylib_load(const(char)* name)
 	{
 		version(Posix) void* handle = dlopen(name, RTLD_NOW);
@@ -67,18 +72,28 @@ import std.conv : to;
 		else return null;
 	}
 
+	/** Bind a library symbol
+	 * This function bind a specific symbol from the dynamic library.
+	 * @param handle library handler
+	 * @param ptr symbol pointer
+	 * @param name symbol name
+	 */
 	void dylib_bindSymbol(void* handle, void** ptr, const(char)* name)
 	{
 		assert(handle);
-		version(Posix) void* sym = dlsym(handle, name);
-		else version(Windows) void* sym = GetProcAddress(handle, name);
+		version(Posix) const void* sym = dlsym(handle, name);
+		else version(Windows) const void* sym = GetProcAddress(handle, name);
 
-		*ptr = sym;
+		*ptr = cast(void*)sym;
 	}
 
+	/** Reports dynamic library errors
+	 * @param buf char buffer
+	 * @param len buffer length
+	 */
 	void dylib_sysError(char* buf, size_t len)
 	{
-		import core.stdc.string;
+		import core.stdc.string : strncpy;
 		version(Windows) {
 			char* msgBuf;
 			enum uint langID = MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT);
@@ -110,7 +125,11 @@ import std.conv : to;
 	}
 }
 version(D_BetterC) {
-	@nogc nothrow void dylib_unload(void* handle) {
+	/** Unload a dynamic library
+	 * @param handle dynamic library handler
+	 */
+	@nogc nothrow void dylib_unload(void* handle)
+	{
 		if(handle) {
 			version(Posix) dlclose(handle);
 			else version(Windows) FreeLibrary(handle);
@@ -122,19 +141,36 @@ else {
 	import std.array;
 	import std.string;
 
+	/** Dynamic Library Version struct */
 	struct DylibVersion
 	{
-		uint major;
-		uint minor;
-		uint patch;
+		uint major; /** major version number */
+		uint minor; /** minor version number */
+		uint patch; /** patch version number */
 	}
 
-	class DylibLoadException : Exception {
+	/** Dynamic Library Loader Exception
+	 * This exception is thrown when the library can't be loaded
+	 */
+	class DylibLoadException : Exception
+	{
+
+		/** Dynamic Library Loader Exception constructor
+		 * @param msg exception message
+		 * @param line line number in code
+		 * @param file code file
+	 	 */
 		this(string msg, size_t line = __LINE__, string file = __FILE__)
 		{
 			super(msg, file, line, null);
 		}
 
+		/** Dynamic Library Loader Exception constructor
+		 * @param names libraries name
+		 * @param reasons reasons why it can't load
+		 * @param line line number in code
+		 * @param file code file
+	 	 */
 		this(string[] names, string[] reasons, size_t line = __LINE__, string file = __FILE__)
 		{
 			string msg = "Failed to load one or more shared libraries:";
@@ -148,21 +184,32 @@ else {
 			this(msg, line, file);
 		}
 
+		/** Dynamic Library Loader Exception constructor
+		 * @param msg exception message
+		 * @param name library name
+		 * @param line line number in code
+		 * @param file code file
+	 	 */
 		this(string msg, string name = "", size_t line = __LINE__, string file = __FILE__)
 		{
 			super(msg, file, line, null);
 			_name = name;
 		}
 
+		/** Get the library name */
 		pure nothrow @nogc
 		@property string name()
 		{
 			return _name;
 		}
-		private string _name;
+
+		private string _name; /** library name */
 	}
 
-	class DylibSymbolLoadException : Exception {
+
+	class DylibSymbolLoadException : Exception
+	{
+
 		this(string msg, size_t line = __LINE__, string file = __FILE__) {
 			super(msg, file, line, null);
 		}
