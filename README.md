@@ -1,4 +1,4 @@
-# RiverD Core
+# RiverD Loader
 A cross-platform betterC compatible shared library loader for D bindings
 
 RiverD is a project to create static and dynamic binds to all C libraries. The intent is to make a standard loader and allow users to use or not `-betterC`, `@nogc` or even `nothrow`.
