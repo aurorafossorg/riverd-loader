@@ -10,6 +10,7 @@ Copyright © 2013-2016, Mike Parker.
 Copyright © 2016, 渡世白玉.
 Copyright © 2018, Michael D. Parker
 Copyright © 2018-2019, Aurora Free Open Source Software.
+Copyright © 2018-2019, Luís Ferreira <luis@aurorafoss.org>
 
 This file is part of the Aurora Free Open Source Software. This
 organization promote free and open source software that you can
@@ -50,6 +51,10 @@ module riverd.loader;
 /** Dynamic library loader
  * @file riverd/loader.d
  * @author Luís Ferreira <luis@aurorafoss.org>
+ * @author Aurora Free Open Source Software
+ * @author 渡世白玉
+ * @author Michael D. Parker
+ * @date 2013-2019
  */
 
 public import riverd.builder;
